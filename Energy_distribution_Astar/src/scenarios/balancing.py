@@ -22,22 +22,6 @@ def solve_balancing_scenario(grid: EnergyGrid, start_station: int,
     Returns:
         Optional[List[int]]: Path connecting all required stations, if found
     """
-    # TODO: Student Implementation
-    # 1. Create BalancingHeuristic instance
-    # heuristic = BalancingHeuristic(grid, low_energy_stations)
-    
-    # 2. Initialize A* pathfinder
-    # pathfinder = AStarPathfinder(grid, heuristic)
-    
-    # 3. Consider:
-    #    - Find optimal order to visit stations
-    #    - Minimize total path distance
-    #    - Consider energy levels when planning route
-    #    - Implement nearest neighbor or similar approach
-    
-    # 4. Example approach:
-    # ordered_stations = find_optimal_station_order(grid, start_station, low_energy_stations)
-    # return find_path_through_stations(pathfinder, ordered_stations)
 
     # Uguale a maintenance
     heuristic = BalancingHeuristic(grid, low_energy_stations)
@@ -98,7 +82,6 @@ def find_optimal_station_order(grid: EnergyGrid, start_station: int, low_energy_
             if total_cost < min_distance:
                 min_distance = total_cost
                 nearest_station = station
-
 
         # Aggiunge la stazione trovata all'ordine e la rimuove dalla lista delle stazioni da visitare
         order.append(nearest_station)

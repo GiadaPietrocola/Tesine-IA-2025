@@ -6,17 +6,17 @@ from typing import Tuple
 class DarwinDataset:
     def __init__(self):
         """
-        Inizializza l'oggetto DarwinDataset con il percorso del dataset.
+        Initializes the DarwinDataset object with the path to the dataset.
 
-        :param data_path: Percorso del file CSV del dataset DARWIN.
+        :param data_path: Path to the DARWIN dataset CSV file.
         """
         self.data_path = "darwin.csv"
-        self.X = None  # Matrice delle feature
-        self.y = None  # Target (etichetta)
+        self.X = None  # Feature matrix
+        self.y = None  # Target (label)
         self._load_data()
 
     def _load_data(self):
-        """Carica il dataset dal file CSV e separa le feature dal target."""
+        """Loads the dataset from the CSV file and separates the features from the target."""
         # Carica il dataset
         data = pd.read_csv(self.data_path)
 
@@ -24,18 +24,18 @@ class DarwinDataset:
         data = self.handle_missing_values(data)
 
         # Separa le feature e il target
-        self.X = data.drop(columns=["class", "ID"]).values  # Rimuove le colonne "class" e "id""
+        self.X = data.drop(columns=["class", "ID"]).values  # Rimuove le colonne "class" e "id"
         self.y = data["class"].values  # La colonna "class" è il target
         # Nomi delle feature
         self.feature_names = data.drop(columns=["class", "ID"]).columns.values
 
     def handle_missing_values(self, data: pd.DataFrame) -> pd.DataFrame:
         """
-        Gestisce i valori mancanti nel dataset.
-        Sostituisce i valori mancanti con la media della colonna.
+        Handles missing values in the dataset.
+        Replaces missing values with the mean of the column.
 
-        :param data: DataFrame contenente il dataset.
-        :return: DataFrame con i valori mancanti gestiti.
+        :param data: DataFrame containing the dataset.
+        :return: DataFrame with handled missing values.
         """
         # Calcola la media per ogni colonna (escludendo la colonna "class" e "ID")
         col_means = data.drop(columns=["class", "ID"]).mean()
@@ -47,44 +47,44 @@ class DarwinDataset:
 
     def get_features(self) -> np.ndarray:
         """
-        Restituisce la matrice delle feature.
+        Returns the feature matrix.
 
-        :return: Matrice (ndarray) delle feature.
+        :return: Feature matrix (ndarray).
         """
         return self.X
 
     def get_target(self) -> np.ndarray:
         """
-        Restituisce il target (etichetta).
+        Returns the target (label).
 
-        :return: Vettore (ndarray) del target.
+        :return: Target vector (ndarray).
         """
         return self.y
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Restituisce sia le feature che il target.
+        Returns both features and target.
 
-        :return: Tuple di numpy array (features, target).
+        :return: Tuple of numpy arrays (features, target).
         """
         return self.X, self.y
 
     def get_number_of_features(self) -> int:
         """
-        Restituisce il numero di feature nel dataset.
+        Returns the number of features in the dataset.
 
-        :return: Numero di feature.
+        :return: Number of features.
         """
         return self.X.shape[1]
 
     def get_number_of_samples(self) -> int:
         """
-        Restituisce il numero di campioni nel dataset.
+        Returns the number of samples in the dataset.
 
-        :return: Numero di campioni.
+        :return: Number of samples.
         """
         return self.X.shape[0]
 
     def get_feature_names(self):
-        """Restituisce i nomi delle feature."""
+        """Returns the names of the features."""
         return self.feature_names

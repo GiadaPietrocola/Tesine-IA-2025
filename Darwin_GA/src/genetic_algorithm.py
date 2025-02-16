@@ -2,17 +2,13 @@
 
 import numpy as np
 import matplotlib
-matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from typing import List, Tuple, Callable
 import time
-from matplotlib.animation import FuncAnimation
-from scipy.stats import entropy
-import seaborn as sns
+
 class GeneticAlgorithm:
     """
-    A comprehensive Genetic Algorithm implementation with smooth real-time visualization
-    and fixed axes for better readability.
+    A comprehensive Genetic Algorithm implementation.
     """
 
     def __init__(
@@ -22,7 +18,7 @@ class GeneticAlgorithm:
             fitness_func: Callable,
             correlations_with_target: np.ndarray,
             feature_correlation_matrix: np.ndarray,
-            dataset: 'DarwinDataset',  # Aggiungi il parametro per il dataset
+            dataset: 'DarwinDataset',
             mutation_rate: float = 0.01,
             crossover_rate: float = 0.8,
             elitism: bool = True,
@@ -241,7 +237,6 @@ class GeneticAlgorithm:
             self.population = np.array(new_population)
 
 
-        plt.ioff()  # Turn off interactive mode
         final_fitness = self._calculate_population_fitness()
         best_idx = np.argmin(final_fitness)
 

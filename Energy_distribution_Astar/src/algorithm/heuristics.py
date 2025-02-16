@@ -46,12 +46,7 @@ class EmergencyHeuristic(BaseHeuristic):
     def estimate(self, current: int, goal: int) -> float:
         """
         Estimate cost considering emergency requirements.
-        
-        TODO: Student Implementation
-        Consider:
-        - Distance to critical station
-        - Energy consumption impact
-        - Path criticality
+
         """
         # Posizioni della stazione corrente e della stazione obiettivo
         pos_current = self.grid.station_data[current]['pos']
@@ -86,12 +81,7 @@ class MaintenanceHeuristic(BaseHeuristic):
     def estimate(self, current: int, goal: int) -> float:
         """
         Estimate cost considering maintenance requirements.
-        
-        TODO: Student Implementation
-        Consider:
-        - Distance to next station
-        - Remaining stations to visit
-        - Overall path optimization
+
         """
         # Posizioni della stazione corrente e della stazione obiettivo
         pos_current = self.grid.station_data[current]['pos']
@@ -106,7 +96,7 @@ class MaintenanceHeuristic(BaseHeuristic):
         # Fattore di penality direttamente proporzionale al livello di energia
         penality_factor = energy_level/50 # 50 non passa per stazione critica, 20 sì
 
-        # Bonus aggiuntivo se la stazione è critica
+        # Fattore aggiuntivo se la stazione è critica
         if self.grid.station_data[current]['is_critical']:
             critical_factor = 0.5
         else: critical_factor = 1
@@ -160,7 +150,7 @@ class BalancingHeuristic(BaseHeuristic):
         # Fattore di penality direttamente proporzionale al livello di energia
         penality_factor = energy_level/10
 
-        # Bonus aggiuntivo se la stazione è critica
+        # Fattore aggiuntivo se la stazione è critica
         if self.grid.station_data[current]['is_critical']:
             critical_factor = 0.4
         else: critical_factor = 1

@@ -34,29 +34,7 @@ class AStarPathfinder:
         Returns:
             Optional[List[int]]: Path from start to goal if found, None otherwise
         """
-        # TODO: Student Implementation
-        # 1. Initialize data structures
-        #    - Priority queue for open set
-        #    - Set for closed set
-        #    - Dictionary for g_scores
-        #    - Dictionary for came_from (to reconstruct path)
         
-        # 2. Initialize algorithm
-        #    - Add start node to open set
-        #    - Set initial g_score
-        #    - Set initial f_score using heuristic
-        
-        # 3. Main loop
-        #    - Get node with lowest f_score from open set
-        #    - If goal reached, reconstruct path
-        #    - For each neighbor:
-        #      * Calculate tentative g_score
-        #      * If better path found, update data structures
-        
-        # 4. Reconstruct path when goal is reached
-        
-        # 5. Return None if no path found
-
         # 1. Inizializza le strutture dati
         open_set = [(0, start)]                                   # Lista open set con nodo iniziale
         closed_set: Set[int] = set()                              # Insieme dei nodi già esplorati
@@ -117,7 +95,6 @@ class AStarPathfinder:
         Returns:
             List[int]: Reconstructed path
         """
-        # TODO: Student Implementation
         path = []  #Lista per memorizzare il percorso
 
         while current is not None:

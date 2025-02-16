@@ -9,10 +9,7 @@ sys.dont_write_bytecode = True
 
 from src.genetic_algorithm import GeneticAlgorithm
 import numpy as np
-import pandas as pd
-import math
 from typing import List, Tuple
-from sklearn.feature_selection import mutual_info_classif
 from scipy.stats import pointbiserialr
 import seaborn as sns
 
@@ -123,7 +120,6 @@ def run_optimization():
         print("\nOptimization Results")
         print("=" * 50)
 
-
         # Ottiene i nomi delle feature dal dataset
         feature_names = dataset.get_feature_names()
 
@@ -137,13 +133,17 @@ def run_optimization():
         selected_features = decode_ga_chromosome(best_chromosome)
         feature_counts[selected_features] += 1
 
+        # Salva la fitness history della run corrente
         ga.save_fitness_history(fitness_history)
 
+        # Salva le feature selezionate nella run corrente
         ga.save_feature_selection_history(feature_selection_history)
 
+        # Salva tutte le fitness per generazione della run corrente
         ga.save_fitness_generation(fitness_generation)
 
 
+    # Medie
     best_fitness_mean = np.mean([run[0] for run in fitness_history], axis=0)
     avg_fitness_mean = np.mean([run[1] for run in fitness_history], axis=0)
     avg_features_mean = np.mean(feature_selection_history, axis=0)
@@ -151,87 +151,98 @@ def run_optimization():
     print(f"\nAverage Best Fitness Value: {np.mean(best_fitness_values):.4f}")
     print("Most Selected Features:", np.argsort(feature_counts)[-10:][::-1])
 
-
-
+    #Plots
     plot_fitness_function(max_generations=MAX_GENERATIONS, best_fitness_mean=best_fitness_mean, avg_fitness_mean=avg_fitness_mean)
     plot_feature_selection_frequency(max_generations=MAX_GENERATIONS, chromosome_length=dataset.get_number_of_features(), feature_selection_history=avg_features_mean)
     plot_boxplot(fitness_history=fitness_generation)
 
 def plot_fitness_function(max_generations: int, best_fitness_mean: np.ndarray, avg_fitness_mean: np.ndarray):
     """
-    Plot the mean best fitness and average fitness over multiple runs.
+    Plots the mean best fitness and mean average fitness across multiple runs over generations.
 
     Parameters:
-        max_generations (int): The maximum number of generations.
-        best_fitness_mean (np.ndarray): The mean of the best fitness values across multiple runs.
-        avg_fitness_mean (np.ndarray): The mean of the average fitness values across multiple runs.
+        max_generations (int): The total number of generations in the evolutionary process.
+        best_fitness_mean (np.ndarray): The mean of the best fitness values across all runs, for each generation.
+        avg_fitness_mean (np.ndarray): The mean of the average fitness values across all runs, for each generation.
     """
-    # Setup improved plotting
+
     sns.set_theme()
     fig, ax = plt.subplots(figsize=(12, 6))
 
-    # Plot fitness trends
+    # Traccia l'andamento della fitness
     ax.plot(range(max_generations), best_fitness_mean, 'r-', label='Mean Best Fitness', linewidth=2)
     ax.plot(range(max_generations), avg_fitness_mean, 'b-', label='Mean Average Fitness', linewidth=2)
 
-    # Set fixed axes limits
+    # Limiti fissi per gli assi
     ax.set_xlim(0, max_generations)
-    ax.set_ylim(0, 1)  # Assumi che la fitness sia normalizzata tra 0 e 1
+    ax.set_ylim(0, 1)
 
-    # Improve grid and layout
     ax.grid(True, linestyle='--', alpha=0.7)
-    ax.set_xlabel('Generation', fontsize=10)
+    ax.set_xlabel('Generations', fontsize=10)
     ax.set_ylabel('Fitness', fontsize=10)
     ax.set_title('Feature Selection Progress (Mean Over Runs)', fontsize=12, pad=20)
     ax.legend(loc='upper left')
 
-    # Tight layout to prevent label clipping
     plt.tight_layout()
     plt.show()
 
 def plot_feature_selection_frequency(max_generations: int, chromosome_length: int, feature_selection_history: np.ndarray):
-    """Crea un grafico della frequenza di selezione delle feature."""
-    feature_frequencies = feature_selection_history / max_generations
+    """
+    Plots the frequency of feature selection across generations.
+
+    Parameters:
+        max_generations (int): The total number of generations.
+        chromosome_length (int): The number of features (length of the chromosome).
+        feature_selection_history (np.ndarray): A binary history of feature selection across generations,
+                                                with shape (max_generations, chromosome_length), where 1 indicates
+                                                the selection of a feature and 0 indicates its non-selection.
+    """
+
+    # Frequenza di selezione di ogni feature su tutte le generazioni
+    feature_frequencies = feature_selection_history.sum(axis=0) / max_generations
     plt.figure(figsize=(12, 6))
     plt.bar(range(chromosome_length), feature_frequencies, color='lightblue', edgecolor='none', width=1)
-    plt.title("Frequenza di Selezione delle Feature")
+    plt.title("Feature Selection Frequency")
     plt.xlabel("Feature Index")
-    plt.ylabel("Frequenza di selezione (%)")
+    plt.ylabel("Selection Frequency (%)")
 
-    # Tight layout to prevent label clipping
     plt.tight_layout()
     plt.show()
 
-
 def plot_boxplot(fitness_history: List[List[np.ndarray]]):
-    """Crea un box plot della distribuzione dei fitness per ogni generazione,
-    gestendo il caso in cui le run terminano con numeri di generazioni diversi.
     """
+    Creates a box plot to visualize the fitness distribution across generations.
+    This function handles the case where different runs have a varying number of generations.
 
-    # Dizionario per raccogliere i fitness per ogni generazione
+    Parameters:
+        fitness_history (List[List[np.ndarray]]): A list of runs, where each run contains an array of fitness values
+                                                   for each generation.
+    """
+    # Dizionario per raccogliere i valori di fitness per ogni generazione
     fitness_data_dict = {}
 
-    # Iteriamo su tutte le run
+    # Iteriamo su tutte le run e raccogliamo i fitness per ogni generazione
     for run in fitness_history:
-        for gen, fitness_values in enumerate(run):  # run può avere un numero variabile di generazioni
+        for gen, fitness_values in enumerate(run):  # Ogni run può avere un numero variabile di generazioni
             if gen not in fitness_data_dict:
                 fitness_data_dict[gen] = []
-            fitness_data_dict[gen].extend(fitness_values)  # Aggiungiamo tutti i fitness di questa generazione
+            fitness_data_dict[gen].extend(fitness_values)  # Aggiungiamo i fitness per la generazione corrente
 
-    # Ordiniamo le generazioni (in caso non siano tutte consecutive)
+    # Ordiniamo le generazioni, nel caso in cui non siano tutte consecutive
     sorted_generations = sorted(fitness_data_dict.keys())
 
     # Creiamo una lista ordinata di dati per il box plot
     fitness_data_reshaped = [fitness_data_dict[gen] for gen in sorted_generations]
 
-    # Creiamo il boxplot
+    # Creiamo il boxplot per visualizzare la distribuzione dei fitness
     plt.figure(figsize=(12, 6))
     sns.boxplot(data=fitness_data_reshaped)
-    plt.title("Box plot delle distribuzioni di Fitness")
-    plt.xlabel("Generazione")
+    plt.title("Box plot of Fitness Distributions")
+    plt.xlabel("Generation")
     plt.ylabel("Fitness")
     plt.xticks(ticks=range(len(sorted_generations)), labels=sorted_generations, rotation=90)
     plt.show()
+
 
 
 if __name__ == "__main__":

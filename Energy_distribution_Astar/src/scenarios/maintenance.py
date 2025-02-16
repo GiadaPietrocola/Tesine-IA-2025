@@ -22,30 +22,6 @@ def solve_maintenance_scenario(grid: EnergyGrid, start_station: int,
     Returns:
         Optional[List[int]]: Complete maintenance route, if found
     """
-    # TODO: Student Implementation
-    # 1. Create MaintenanceHeuristic instance
-    # heuristic = MaintenanceHeuristic(grid, stations_to_visit)
-    
-    # 2. Initialize A* pathfinder
-    # pathfinder = AStarPathfinder(grid, heuristic)
-    
-    # 3. Consider:
-    #    - Find optimal subpaths between consecutive stations
-    #    - Ensure stations are visited in the correct order
-    #    - Combine subpaths into complete route
-    
-    # 4. Example approach:
-    # complete_path = []
-    # current = start_station
-    # for next_station in stations_to_visit:
-    #     subpath = pathfinder.find_path(current, next_station)
-    #     if not subpath:
-    #         return None
-    #     complete_path.extend(subpath[:-1])  # Avoid duplicating intermediate nodes
-    #     current = next_station
-    # complete_path.append(stations_to_visit[-1])
-    # return complete_path
-
 
     # Istanza dell'euristica
     heuristic = MaintenanceHeuristic(grid, stations_to_visit)

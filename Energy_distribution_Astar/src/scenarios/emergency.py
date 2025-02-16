@@ -22,20 +22,6 @@ def solve_emergency_scenario(grid: EnergyGrid, start_station: int,
     Returns:
         Optional[List[int]]: Path from start to critical station, if found
     """
-    # TODO: Student Implementation
-    # 1. Create EmergencyHeuristic instance
-    # heuristic = EmergencyHeuristic(grid, critical_station)
-    
-    # 2. Initialize A* pathfinder with the heuristic
-    # pathfinder = AStarPathfinder(grid, heuristic)
-    
-    # 3. Consider:
-    #    - Minimize time to reach critical station
-    #    - Account for energy consumption
-    #    - Handle path constraints
-    
-    # 4. Find and return the optimal path
-    # return pathfinder.find_path(start_station, critical_station)
 
     # Crea un' istanza dell'euristica
     heuristic = EmergencyHeuristic(grid, critical_station)
