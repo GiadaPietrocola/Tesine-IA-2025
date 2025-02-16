@@ -9,7 +9,7 @@ import time
 import seaborn as sns
 
 class ModelEvaluator:
-    def __init__(self, data_loader, n_runs=2, cv_folds=5):
+    def __init__(self, data_loader, n_runs=30, cv_folds=5):
         self.model = None
         self.data_loader = data_loader
         self.n_runs = n_runs
@@ -35,15 +35,16 @@ class ModelEvaluator:
         X_train, X_test, y_train, y_test = self.data_loader.get_data(random_state=42)
 
         self.model = MLPClassifier(
-            hidden_layer_sizes=(100, 50),
+            hidden_layer_sizes=(100,50),
             activation='tanh',
             solver='adam',
             alpha=0.0001,
-            batch_size=64,
+            batch_size=32,
             learning_rate='adaptive',
+            learning_rate_init=0.001,
             max_iter=1000,
             shuffle=True,
-            random_state=42,
+            random_state=42
         )
 
         # Cross-validation scores
@@ -51,18 +52,19 @@ class ModelEvaluator:
 
         for run in range(1, self.n_runs + 1):
             print(f"\nRun {run} in progress...")
-
             self.model = MLPClassifier(
-                hidden_layer_sizes=(100, 50),
+                hidden_layer_sizes=(100,50),
                 activation='tanh',
                 solver='adam',
                 alpha=0.0001,
-                batch_size=64,
+                batch_size=32,
                 learning_rate='adaptive',
+                learning_rate_init=0.001,
                 max_iter=1000,
                 shuffle=True,
-                random_state=42+run,
+                random_state=42+run
             )
+
 
             X_train, X_test, y_train, y_test = self.data_loader.get_data(random_state=42+run)
 
@@ -76,6 +78,7 @@ class ModelEvaluator:
             self.accuracies.append(accuracy)
             self.train_scores_all.append(train_mean_run)
             self.test_scores_all.append(test_mean_run)
+            self.save_confidence_scores(X_test, y_test, run)
 
             # ROC and AUC
             fpr_train, tpr_train, fpr_test, tpr_test, roc_auc_train, roc_auc_test = self.evaluate_roc_auc(X_train, y_train, X_test, y_test)
@@ -113,8 +116,6 @@ class ModelEvaluator:
 
         conf_matrix = confusion_matrix(y_test, y_pred)
         self.conf_matrices.append(conf_matrix)
-
-        self.save_confidence_scores(X_test, y_test)
 
         return accuracy, train_sizes, train_mean_run, test_mean_run
 
@@ -257,15 +258,16 @@ class ModelEvaluator:
         plt.show()
 
 
-    def save_confidence_scores(self, X_test, y_test):
+    def save_confidence_scores(self, X_test, y_test, run):
         probabilities = self.model.predict_proba(X_test)
         df = pd.DataFrame(probabilities, columns=[f'Class_{i}' for i in range(probabilities.shape[1])])
 
         df['Predicted_Class'] = self.model.predict(X_test)
         df['True_Label'] = y_test
 
-        df.to_csv('confidence_scores.csv', index=False, float_format='%.10f', sep=';')
-        print("Confidence scores salvati in 'confidence_scores.csv'.")
+        filename=f"confidence_scores_run{run}.csv"
+        df.to_csv(filename, index=False, float_format='%.10f', sep=';')
+        print(f"Confidence scores salvati in 'confidence_scores_run{run}.csv'.")
 
 
 if __name__ == "__main__":

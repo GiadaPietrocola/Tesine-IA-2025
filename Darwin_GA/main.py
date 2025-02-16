@@ -45,7 +45,7 @@ def fitness_function(
     # Seleziona le feature in base al cromosoma
     selected_features = np.where(chromosome == 1)[0]
     num_selected = len(selected_features)
-
+    n_max_features = 450
     # Somma delle correlazioni assolute con il target per le feature selezionate normalizzata
     correlation_sum = np.sum(np.abs(correlations_with_target[selected_features])) / num_selected
 
@@ -56,7 +56,7 @@ def fitness_function(
     inter_feature_penalty = np.sum(np.abs(np.triu(selected_correlation_matrix, k=1))) / ((num_selected * (num_selected - 1)) / 2)
 
     # Calcola il valore di fitness
-    fitness_value = inter_feature_penalty + num_selected/450 - correlation_sum
+    fitness_value = inter_feature_penalty + num_selected/n_max_features - correlation_sum
 
     return fitness_value
 
@@ -73,7 +73,7 @@ def run_optimization():
     print("=" * 50)
 
     # Parametri
-    n_runs=30
+    n_runs=1
     MAX_GENERATIONS = 200
     POPULATION_SIZE = 100
 
@@ -104,12 +104,13 @@ def run_optimization():
             feature_correlation_matrix=feature_correlation_matrix,
             dataset=dataset,
             max_generations=MAX_GENERATIONS,
-            mutation_rate=0.01,
-            crossover_rate=0.6,
+            mutation_rate=0.05,
+            crossover_rate=0.8,
             elitism=True,
             verbose=True,
-            plot_pause=0.5,
-            random_state=42+run
+            random_state=42+run,
+            stagnation_generation=10,
+            tolerance=1e-4
         )
 
         # Esegue l'algoritmo genetico
@@ -195,7 +196,7 @@ def plot_feature_selection_frequency(max_generations: int, chromosome_length: in
     plt.bar(range(chromosome_length), feature_frequencies, color='lightblue', edgecolor='none', width=1)
     plt.title("Frequenza di Selezione delle Feature")
     plt.xlabel("Feature Index")
-    plt.ylabel("Frequenza di selezione")
+    plt.ylabel("Frequenza di selezione (%)")
 
     # Tight layout to prevent label clipping
     plt.tight_layout()
@@ -203,32 +204,33 @@ def plot_feature_selection_frequency(max_generations: int, chromosome_length: in
 
 
 def plot_boxplot(fitness_history: List[List[np.ndarray]]):
-    """Crea un box plot della distribuzione dei fitness ad ogni generazione per tutte le run."""
+    """Crea un box plot della distribuzione dei fitness per ogni generazione,
+    gestendo il caso in cui le run terminano con numeri di generazioni diversi.
+    """
 
-    # Calcoliamo il numero di generazioni e il numero di run
-    generations = len(fitness_history[0])  # Numero di generazioni
-    runs = len(fitness_history)  # Numero di run
-    population = len(fitness_history[0][0])  # Numero di individui per generazione
+    # Dizionario per raccogliere i fitness per ogni generazione
+    fitness_data_dict = {}
 
-    # Creiamo una lista che conterrà i dati riorganizzati (generazione, runs * popolazione)
-    fitness_data_reshaped = []
+    # Iteriamo su tutte le run
+    for run in fitness_history:
+        for gen, fitness_values in enumerate(run):  # run può avere un numero variabile di generazioni
+            if gen not in fitness_data_dict:
+                fitness_data_dict[gen] = []
+            fitness_data_dict[gen].extend(fitness_values)  # Aggiungiamo tutti i fitness di questa generazione
 
-    # Aggiungiamo i dati per ogni generazione
-    for gen in range(generations):
-        # Raccogliamo i fitness di tutte le run per la generazione corrente
-        fitness_values = []
-        for run in range(runs):
-            fitness_values.extend(fitness_history[run][gen])  # Aggiungiamo i fitness per ogni individuo
-        fitness_data_reshaped.append(fitness_values)
+    # Ordiniamo le generazioni (in caso non siano tutte consecutive)
+    sorted_generations = sorted(fitness_data_dict.keys())
 
-    # Ora fitness_data_reshaped ha la forma (generazione, runs * popolazione)
-    # Creiamo un boxplot per ogni generazione
+    # Creiamo una lista ordinata di dati per il box plot
+    fitness_data_reshaped = [fitness_data_dict[gen] for gen in sorted_generations]
+
+    # Creiamo il boxplot
     plt.figure(figsize=(12, 6))
-    sns.boxplot(data=fitness_data_reshaped)  # Dati riorganizzati per generazione
+    sns.boxplot(data=fitness_data_reshaped)
     plt.title("Box plot delle distribuzioni di Fitness")
     plt.xlabel("Generazione")
     plt.ylabel("Fitness")
-
+    plt.xticks(ticks=range(len(sorted_generations)), labels=sorted_generations, rotation=90)
     plt.show()
 
 

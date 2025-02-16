@@ -28,9 +28,9 @@ class GeneticAlgorithm:
             elitism: bool = True,
             max_generations: int = 100,
             verbose: bool = True,
-            animation_interval: int = 500,
-            plot_pause: float = 0.5,
-            random_state=42
+            random_state=42,
+            stagnation_generation: int = None,
+            tolerance: float = None
     ):
 
 
@@ -44,10 +44,10 @@ class GeneticAlgorithm:
         self.elitism = elitism
         self.max_generations = max_generations
         self.verbose = verbose
-        self.animation_interval = animation_interval
-        self.plot_pause = plot_pause
         self.correlations_with_target = correlations_with_target
         self.feature_correlation_matrix = feature_correlation_matrix
+        self.stagnation_generation = stagnation_generation
+        self.tolerance = tolerance
         np.random.seed(random_state)
 
 
@@ -63,8 +63,8 @@ class GeneticAlgorithm:
 
         # Create full-length arrays for data
         self.generation_points = np.arange(max_generations)
-        self.best_fitness_data = np.zeros(max_generations)
-        self.avg_fitness_data = np.zeros(max_generations)
+        self.best_fitness_data = np.full(max_generations, np.nan)
+        self.avg_fitness_data = np.full(max_generations, np.nan)
 
     def _calculate_population_fitness(self) -> np.ndarray:
         """Calculate fitness for all individuals in the population."""
@@ -180,6 +180,8 @@ class GeneticAlgorithm:
 
         start_time = time.time()
         max_time = 200  # Tempo massimo in secondi per ogni run
+        stagnation_counter = 0
+        last_best_fitness = float('inf')
 
         for generation in range(self.max_generations):
             elapsed_time = time.time() - start_time
@@ -207,6 +209,17 @@ class GeneticAlgorithm:
                 print(f"Average Fitness: {avg_fitness:,.2f}")
                 print(f"Population Diversity: {self.calculate_population_diversity():,.2f}")
 
+            if self.stagnation_generation is not None and self.tolerance is not None:
+                if abs(best_fitness - last_best_fitness) < self.tolerance:
+                    stagnation_counter +=1
+                else:
+                    stagnation_counter=0
+                last_best_fitness = best_fitness
+
+                print(best_fitness)
+                if stagnation_counter >= self.stagnation_generation:
+                    print(f"Stopping early due to stagnation in best fitness for {self.stagnation_generation} generations.")
+                    break
             # Create new population
             new_population = []
 
